@@ -1,6 +1,8 @@
 const path = require('path');
 const express = require('express');
 const hbs = require('hbs');
+const forecast = require('./utils/forecast')
+const geocode = require('./utils/geocode')
 
 const app = express();
 
@@ -39,6 +41,39 @@ app.get('/about', (req, res) => {
         title: 'About',
         name: 'Ujjwal Patel',
     })
+})
+
+//  Page
+app.get('/weather', (req, res) => {
+    if (!req.query.address) {
+        return res.send({
+            error: 'You must provide a address term'
+        })
+    }
+    console.log(req.query.address);
+    geocode(req.query.address, (error, data) => {
+        // console.log(error);
+        if (error) {
+            return res.send({ error });
+        }
+        forecast(data?.latitude, data?.longitude, (error, forecastData) => {
+            if (error) {
+
+                return res.send({ error });
+
+            }
+
+            // console.log(data?.location);
+            // console.log(forecastData);
+            res.send({
+                forecastData,
+                location: data?.location,
+                address: req?.query?.address
+            })
+
+        })
+    })
+
 })
 
 // Help Page error page
