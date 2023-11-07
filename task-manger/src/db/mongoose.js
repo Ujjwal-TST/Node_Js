@@ -11,17 +11,7 @@ mongoose.connect(URL)
 
 
 
-// Task Model
-const Task = mongoose.model('Task', {
-    description: {
-        type: String,
-        required: true,
-    },
-    completed: {
-        type: Boolean,
-        default: false
-    }
-})
+
 
 // const task1 = new Task({
 //     description: 'Testing Phase',

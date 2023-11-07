@@ -1,27 +1,29 @@
 const express = require('express');
 require('./db/mongoose')
-const User = require('./models/User')
+const userRoutes = require('./routes/User')
+const taskRoutes = require('./routes/Task')
+
 
 const app = express()
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 4000
 
 // Use to Parse Incoming Json to an Object
 app.use(express.json())
 
 
-app.post('/users', (req, res) => {
-    console.log(req.body);
-    const user = new User(req.body)
+// User Endpoints
+// All endpoints move into the routes User.js file
+// use the routes enpoint first import it
+// use app.use() method
+app.use(userRoutes)
 
-    user.save().then(() => {
-        // res.status(201)
-        // res.send(user)
-        res.status(201).send(user)
-        // Above code short form
-    }).catch((err) => {
-        res.status(400).send(err)
-    })
-})
+// Task Route
+app.use(taskRoutes)
+
+
+
+
+
 
 app.listen(port, () => {
     console.log('Server is up on port ' + port);
