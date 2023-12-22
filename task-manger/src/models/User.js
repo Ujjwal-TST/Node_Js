@@ -54,7 +54,10 @@ const userSchema = new mongoose.Schema({
             required: true,
         }
     }]
+}, {
+    timestamps: true,
 })
+// Timestamps object create the field in your response with createdAt and updatedAt
 
 userSchema.virtual('tasks', {
     ref: 'Task',
@@ -147,7 +150,7 @@ userSchema.pre('findOneAndDelete', async function (next) {
     // Delete associated tasks before removing the user
     await Task.deleteMany({ userId: user._id });
 
-    console.log('Just before delete');
+    // console.log('Just before delete');
 
     // Call next to proceed with the remove action
     next();

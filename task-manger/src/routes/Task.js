@@ -34,6 +34,9 @@ router.post('/tasks', auth, async (req, res) => {
 })
 
 // Get All
+// user query params ?completed=true
+// user query params ?limit=2&page=1
+// user query params ?sortBy=createdAt:desc
 router.get('/tasks', auth, async (req, res) => {
     // res?.send('testing')
 
@@ -46,13 +49,39 @@ router.get('/tasks', auth, async (req, res) => {
     // })
 
     // Using async-await
+    const match = {}
+    const sort = {}
+
+    if (req.query.completed) {
+        match.completed = req.query.completed === 'true'
+
+    }
+    // console.log(req.query.sortBy);
+    if (req.query.sortBy) {
+        const parts = req.query.sortBy.split(':')
+
+        sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
+        // -1 
+    }
+    // console.log(sort);
 
     try {
         // 1st Way
         // const tasks = await Task.find({ userId: req?.user?._id })
 
         // 2nd Way
-        await req?.user?.populate('tasks')
+        // await req?.user?.populate('tasks')
+        //  we want to add a query params
+        await req.user.populate({
+            path: 'tasks', // your exace endpoint
+            match,
+            options: {
+                limit: parseInt(req.query.limit),
+                skip: parseInt(req.query.page) - 1
+            },
+            sort
+
+        })
         // console.log(req.user);
         // console.log(tasks);
         res?.send(req?.user?.tasks)
