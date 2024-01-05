@@ -1,8 +1,12 @@
 const express = require('express');
+const multer = require('multer');
+const sharp = require('sharp');
 const User = require('../models/User')
 const auth = require('../middleware/auth')
 
 const router = new express.Router()
+
+
 
 // Login
 router.post('/users/login', async (req, res) => {
@@ -225,7 +229,7 @@ router.delete('/users/me', auth, async (req, res) => {
     try {
 
         // Delete you account 
-        await await User.findOneAndDelete(req.user._id)
+        await User.findOneAndDelete(req.user._id)
         // deleteOne() is the mongoose function
         res?.send(req.user)
 
@@ -253,6 +257,59 @@ router.delete('/users/:id', auth, async (req, res) => {
     } catch (err) {
         res?.status(500).send(err)
     }
+})
+
+
+const upload = multer({
+    // dest: 'avatar',
+    // I want to store in my mongoose
+    limits: {
+        fileSize: 1000000
+    },
+    fileFilter(req, file, callback) {
+        // console.log(file.originalname.match(/\.(jpg|jpeg|png)$/));
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+            callback(new Error("Image Extension must be .jpg or .jpeg or .png"))
+        }
+        callback(undefined, true)
+    }
+})
+
+// Upload User Image
+
+router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
+
+    // to get that file we use req.file.buffer where our image is actually stored
+    // req.user.avatar = req.file.buffer
+    // want to save all the images in .png and resize after user upload it we can use sharp npm package
+    const buffer = await sharp(req.file.buffer).resize({
+        height: 250,
+        width: 250
+    }).png().toBuffer()
+    req.user.avatar = buffer
+    await req.user.save()
+    res.send({
+        message: "Image Uploaed successfully!!!"
+    })
+}, (err, req, res, next) => {
+    res.status(400).send({
+        error: err.message
+    })
+})
+// Delete Upload User Image
+
+router.delete('/users/me/avatar', auth, async (req, res) => {
+
+    // to get that file we use req.file.buffer where our image is actually stored
+    req.user.avatar = undefined
+    await req.user.save()
+    res.send({
+        message: "Image Deleted successfully!!!"
+    })
+}, (err, req, res, next) => {
+    res.status(400).send({
+        error: err.message
+    })
 })
 
 module.exports = router
